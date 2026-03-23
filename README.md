@@ -45,7 +45,7 @@ PREDICT_RUL=93.5
 PREDICT_PROB=0.2524
 yxsh: inference latency: 229.64 us (0.2296 ms)
 ```
-在 Ubuntu虛擬機下(單核心):
+在 Ubuntu虛擬機下進行訓練(單核心):
 ```shell
 yxsh> yxsh: training started [15731 samples, in: 700, out: 1]
 yxsh: model saved to 'shell_trained_model.bin'

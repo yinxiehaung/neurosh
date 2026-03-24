@@ -8,7 +8,7 @@
 int main() {
   char errbuf[1024];
   mem_arena_t arena = INIT_ARENA;
-  if (arena_init(&arena, MiB(256), errbuf) == -1) {
+  if (arena_init(&arena, MiB(4), errbuf) == -1) {
     fprintf(stderr, "yxsh: fatal error: failed to init memory arena: %s\n",
             errbuf);
     return 1;

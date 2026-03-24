@@ -1,1 +1,5 @@
+*.o
 yxsh
+*.bin
+__pycache__/
+.DS_Store

@@ -1,4 +1,6 @@
 #include "yxsh_internal.h"
+#include <bits/time.h>
+#include <time.h>
 
 typedef int (*buildin_func_t)(exe_ctx_t *ctx, shell_AST_t *ast);
 
@@ -159,7 +161,8 @@ static int buildin_nn_eval(exe_ctx_t *ctx, shell_AST_t *ast) {
   mat_data_type *row_ptr =
       arena_push_arr(*tmp.arena, mat_data_type, input_size + 1, true, NULL);
   matrix_t input_vec = mat_init(tmp.arena, 1, input_size, NULL);
-
+  struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
   for (ui64 i = 0; i < total_samples; i++) {
     if (fread(row_ptr, sizeof(mat_data_type), input_size + 1, f) !=
         input_size + 1)
@@ -173,12 +176,21 @@ static int buildin_nn_eval(exe_ctx_t *ctx, shell_AST_t *ast) {
     sum_sq_error += diff * diff;
   }
   fclose(f);
-
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  long seconds = end.tv_sec - start.tv_sec;
+  long ns = end.tv_nsec - start.tv_nsec;
+  if (ns < 0) {
+    seconds--;
+    ns += 1000000000;
+  }
+  double total_sec = (double)seconds + (double)ns / 1000000000.0;
+  double throughput = (double)total_samples / total_sec;
   double rmse = sqrt(sum_sq_error / total_samples);
   printf("Samples:  %lu\n", total_samples);
   printf("RMSE:     %.4f\n", rmse);
   printf("Est. Err: +/- %.1f cycles\n", rmse * 125.0);
-
+  printf("yxsh: eval latency: %.4f s | throughput: %.0f samples/sec\n",
+         total_sec, throughput);
   arena_end_tmp(&tmp);
   return 0;
 }
@@ -274,7 +286,7 @@ static int buildin_nn_predict(exe_ctx_t *ctx, shell_AST_t *ast) {
   const char *path = str_to_cstr(ctx->arena, &ast->argv[1]);
   FILE *f = fopen(path, "rb");
   if (!f) {
-    fprintf(stderr, "yxsh: predict: %s: file not found\n", path);
+    fprintf(stderr, "yxsh: inference: %s: file not found\n", path);
     return 1;
   }
 
@@ -284,19 +296,25 @@ static int buildin_nn_predict(exe_ctx_t *ctx, shell_AST_t *ast) {
 
   if (fread(input_vec.data, sizeof(mat_data_type), input_size, f) !=
       input_size) {
-    fprintf(stderr, "yxsh: predict: %s: read error or EOF\n", path);
+    fprintf(stderr, "yxsh: inference: %s: read error or EOF\n", path);
     fclose(f);
     arena_end_tmp(&tmp);
     return 1;
   }
   fclose(f);
-
+  struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC_COARSE, &start);
   matrix_t pred = nn_forward(tmp.arena, ctx->status->loaded_model, &input_vec);
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  long long nanoseconds = (end.tv_sec - start.tv_sec) * 1000000000LL +
+                          (end.tv_nsec - start.tv_nsec);
+  double microseconds = nanoseconds / 1000.0;
   float prob = MAT_AT(&pred, 0, 0);
   float rul = 125.0f * (1.0f - prob);
   printf("PREDICT_RUL=%.1f\n", rul);
   printf("PREDICT_PROB=%.4f\n", prob);
-
+  printf("yxsh: inference latency: %.2f us (%.5f ms)\n", microseconds,
+         microseconds / 1000.0);
   arena_end_tmp(&tmp);
   return 0;
 }

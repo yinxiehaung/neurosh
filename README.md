@@ -46,23 +46,25 @@ PREDICT_PROB=0.2524
 yxsh: inference latency: 229.64 us (0.2296 ms)
 ```
 在 Ubuntu虛擬機下進行訓練(單核心):
+利用pref工具，測量其在Page faults以及CPU使用率
 ```shell
 yxsh> yxsh: training started [15731 samples, in: 700, out: 1]
 yxsh: model saved to 'shell_trained_model.bin'
+
  Performance counter stats for './yxsh':
         13,7220.96 msec task-clock                       #    1.000 CPUs utilized             
-
                880      context-switches                 #    6.413 /sec                      
-
                  0      cpu-migrations                   #    0.000 /sec                      
-
                 78      page-faults                      #    0.568 /sec                      
-
      <not supported>      cycles                                                                
      <not supported>      instructions                                                          
      <not supported>      branches                                                              
      <not supported>      branch-misses                                                         
+
      137.270693079 seconds time elapsed
      137.142991000 seconds user
      0.082973000 seconds sys
 ```
+## Compare Pytorch
+
+

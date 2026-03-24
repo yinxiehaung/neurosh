@@ -68,9 +68,9 @@ yxsh: model saved to 'shell_trained_model.bin'
 ```
 ## Compare Pytorch
 ### Result
-| 測試維度 (Metric) | PyTorch (PC VM) | **yxsh (PC VM)** | **yxsh (Zero 2 W)** | 關鍵觀察 (Insights) |
+| 測試維度 (Metric) | PyTorch (PC VM) | **neurosh (PC VM)** | **neurosh (Zero 2 W)** | 觀察 (Insights) |
 | :--- | :--- | :--- | :--- | :--- |
-| **啟動開銷 (Startup)** | **1.04 sec** | **< 0.01 sec** | **< 0.01 sec** | **yxsh 快 100 倍**，徹底消除框架載入延遲。 |
+| **啟動開銷 (Startup)** | **1.04 sec** | **< 0.01 sec** | **< 0.01 sec** | **neurosh 快 100 倍**，徹底消除框架載入延遲。 |
 | **推論延遲 (Latency)** | 81.39 $\mu s$ | **1.01 ms** | **1.89 ms** | 包含 Shell 解析與 I/O |
 | **記憶體佔用 (RSS)** | 332.6 MB | **6.2 MB** | **5.6 MB** | **節省 98% 資源**，為 Zero 2 W 部署之關鍵。 |
 | **磁碟干擾 (Faults)** | 55,680 (Minor) | **1,116 (Minor)** | **1,117 (Minor)** |  |
